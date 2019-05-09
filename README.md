@@ -1,5 +1,5 @@
 # chat-app-server
-Server for the chat app project
+Server for the chat app project, currently being hosted locally.
 
 # Usage:
 1. Make a postgres database:
