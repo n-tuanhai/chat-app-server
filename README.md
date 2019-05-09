@@ -14,3 +14,11 @@ Server for the chat app project, currently being hosted locally.
     sequelize db:migrate
     nodemon ./server.js
     ```
+3. Note:
+    ```
+    When registering new user, the password must be:
+        - At least 8 characters long
+        - Include at least one lowercase and an uppercase letter
+        - Include at least one special character
+        - Include at least one number
+   ```
