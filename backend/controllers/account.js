@@ -23,8 +23,19 @@ exports.register = function (req, res) {
 
     const newUser = db.User.build({
         username: req.body.username,
+        email: req.body.email,
         password: generateHash(req.body.password)
     });
+    db.User.findOne({
+        where: { 'email': req.body.email }
+    }).then(user => {
+        if (user != null) {
+            console.log("Email already exists!");
+            res.status(422).json({
+                message: "Email already exists"
+            });
+        }
+    })
     db.User.findOne({
         where: { 'username': req.body.username }
     }).then(user => {
@@ -45,12 +56,14 @@ exports.register = function (req, res) {
 exports.login = function (req, res) {
     console.log("-----------------------------------");
     console.log("Login request:");
-    console.log("username:", req.body.username);
+    console.log("username/email:", req.body.username);
     console.log("password:", req.body.password);
     console.log("-----------------------------------");
 
     db.User.findOne({
-        where: { 'username': req.body.username }
+        where: {
+            [Op.or]: [{ 'username': req.body.username }, { 'email': req.body.username }]
+        }
     }).then(user => {
         if (user == null) {
             res.status(422).json({
@@ -68,15 +81,16 @@ exports.login = function (req, res) {
                     jwt.sign({
                         username: user.username,
                         userID: user.id
-                    }, secretkey, { expiresIn: "1h" }, (err,token) => {
-                        if(err) {
+                    }, secretkey, { expiresIn: "500h" }, (err, token) => {
+                        if (err) {
                             res.status(422).json({
                                 message: 'Failed to create token',
                             })
                         } else {
                             res.status(200).json({
                                 message: 'Logged in successfully',
-                                token: token
+                                token: token,
+                                userID: user.id
                             });
                         }
                     });
@@ -89,10 +103,4 @@ exports.login = function (req, res) {
             });
         }
     })
-}
-
-exports.logout = function (req, res) {
-    console.log("Logged out");
-    req.logout();
-    res.redirect('/');
 }
