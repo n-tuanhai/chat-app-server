@@ -1,5 +1,6 @@
 let bcrypt = require('bcrypt');
 const db = require('../models');
+var Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const { validationResult } = require('express-validator/check');
 const jwt = require('jsonwebtoken');
