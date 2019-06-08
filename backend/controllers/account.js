@@ -5,6 +5,9 @@ const Op = Sequelize.Op;
 const { validationResult } = require('express-validator/check');
 const jwt = require('jsonwebtoken');
 const secretkey = 'u4AOqGP4pgSP2z1hsG6ZCkrkEIE7ayEsf9nbbFQlBbTCNXWJmn5NE1CUauxQgYD';
+let auth = require('../middleware/check-auth');
+
+
 
 const generateHash = function (password) {
     return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null)
@@ -13,7 +16,9 @@ const generateHash = function (password) {
 exports.register = function (req, res) {
     console.log("-----------------------------------");
     console.log("Register request:");
+    console.log("email:", req.body.email);
     console.log("username:", req.body.username);
+
     console.log("password:", req.body.password);
     console.log("-----------------------------------");
 
@@ -63,9 +68,7 @@ exports.login = function (req, res) {
     console.log("-----------------------------------");
 
     db.User.findOne({
-        where: {
-            [Op.or]: [{ 'username': req.body.username }, { 'email': req.body.username }]
-        }
+      where: { email: req.body.email }
     }).then(user => {
         if (user == null) {
             res.status(422).json({
@@ -104,5 +107,50 @@ exports.login = function (req, res) {
                 }
             });
         }
-    })
+    });
+}
+
+exports.change = function(req, res){
+  db.User.findByPk(req.params.id).then(change =>{
+    if(change){
+       bcrypt.compare(req.body.password, change.password).then(result =>{
+         if(result){
+           db.User.update({
+             password : generateHash(req.body.newpassword),
+           },
+           {where : {id : req.params.id}}
+         ).then(newpass =>{
+            if(newpass){
+              res.status(200).json({
+                message : "Change successfuly"
+              });
+            }
+        else{
+           res.status(422).json({
+             message : "Can't update!!!"
+           });
+         }
+       });
+     }else{
+       res.status(422).json({
+         message : "Enter wrong password!!!"
+       });
+     }
+       }).catch(err =>{
+         res.status(401).json({
+           message : "Auth failed"
+         });
+       });
+    }else{
+      res.status(422).json({
+        message : "Not this person"
+      });
+    }
+  });
+}
+
+exports.test = function(req ,res){
+  res.status(200).json({
+    message : req.params.id
+  })
 }
