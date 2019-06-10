@@ -1,6 +1,6 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
-    var User = sequelize.define('Message', {
+    var Message = sequelize.define('Message', {
         MessID: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
@@ -30,5 +30,5 @@ module.exports = (sequelize, DataTypes) => {
         },
     },{schema: 'chatapp'});
 
-    return User;
+    return Message;
 };

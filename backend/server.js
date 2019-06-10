@@ -17,17 +17,6 @@ db.sequelize.sync().then(() => {
     console.log("Successfully connected to db!");
 });
 
-//login-logout-register
-// server.post("/api/register", [
-//     check('email').isEmail(),
-//     check("password", "Password should be combination of one uppercase , one lower case, one special char, one digit and min 8 , max 20 char long")
-//         .matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}$/, "i")
-// ], account.register);
-//
-// server.post("/api/login", requre("./controllers/user/index.js"));
-//
-// server.put("/api/changepass/:id", auth, account.change);
-
 server.use("/api/", require("./controllers/auth/index.js"));
 
 server.use("/api/user", require("./controllers/user/index.js"));
@@ -46,8 +35,28 @@ var io = socket(listen);
 io.on('connection', function (socket) {
     console.log('Made socket connection', socket.id);
 
-    socket.on('join-room', function (data) {middleware/
-        socket.join(data.userid)
+    socket.on('join-room', function (data) {
+        db.User.findOne({
+            where: { 'id': data.sendFrom }
+        }).then(user => {
+            if (user != null) {
+                db.Conversation.findOne({
+                    where: { 'convoID': data.sendFrom + data.sendTo}
+                }).then(convo => {
+                    if (convo == null) {
+                        db.Conversation.create({
+                            convoID: data.sendFrom + data.sendTo,
+                            userID: data.sendFrom
+                        }) 
+                        db.Conversation.create({
+                            convoID: data.sendFrom + data.sendTo,
+                            userID: data.sendTo
+                        }) 
+                    }
+                    socket.join(convo.convoID);
+                })
+            }
+        }
     })
 
     socket.on('chat', function (data) {
@@ -55,14 +64,13 @@ io.on('connection', function (socket) {
             where: { 'id': data.sendFrom }
         }).then(user => {
             if (user != null) {
-                data.sendFromName = user.username
-                db.Message.create({
+                const newMess = db.Message.build({
                     sendFrom: data.sendFrom,
                     sendTo: data.sendTo,
                     content: data.content,
-                }).then(mess => {
-                    socket.to(mess.sendTo).emit('incoming-message', mess.get({ plain: true }))
                 })
+                newMess.save();
+                socket.broadcast.to(data.convoID).emit('incoming-message', newMess.get({ plain: true }));
             }
         })
     })
