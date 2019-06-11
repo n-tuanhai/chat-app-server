@@ -56,10 +56,11 @@ io.on('connection', function (socket) {
                         })
                     }
                     socket.join(convo.convoID);
-                })
-            }
-        }
-    })
+                  })
+              }
+          })
+      })
+
 
     socket.on('chat', function (data) {
         db.User.findOne({

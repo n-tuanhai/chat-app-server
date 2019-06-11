@@ -21,11 +21,13 @@ module.exports = {
         res.status(422).json({ errors: errors.array() });
       } else {
         db.User.findOne({
-          where: { email: req.body.email }
+          where: {
+            [Op.or]: [{ username: req.body.email }, { email: req.body.email }]
+          }
         }).then(user => {
           if (user == null) {
             res.status(422).json({
-              message: "Auth failed"
+              message: "Not Register"
             });
             console.log("User does not exist!");
           } else {
@@ -91,47 +93,5 @@ module.exports = {
           }
         });
       }
-    },
-
-  change : (req, res) =>{
-    db.User.findByPk(req.params.id).then(change =>{
-      if(change){
-         bcrypt.compare(req.body.password, change.password).then(result =>{
-           if(result){
-             db.User.update({
-               password : generateHash(req.body.newpassword),
-             },
-             {where : {id : req.params.id}}
-           ).then(newpass =>{
-              if(newpass){
-                res.status(200).json({
-                  message : "Change successfuly"
-                });
-              }
-          else{
-             res.status(422).json({
-               message : "Can't update!!!"
-             });
-           }
-         });
-       }else{
-         res.status(422).json({
-           message : "Enter wrong password!!!"
-         });
-       }
-         }).catch(err =>{
-           res.status(401).json({
-             message : "Auth failed"
-           });
-         });
-      }else{
-        res.status(422).json({
-          message : "Not this person"
-        });
-      }
-    });
-  },
-
-
-
+    }
 };
