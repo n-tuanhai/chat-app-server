@@ -21,6 +21,8 @@ server.use("/api/", require("./controllers/auth/index.js"));
 
 server.use("/api/user", require("./controllers/user/index.js"));
 
+server.use("/api/conv", require("./controllers/conversation/index.js"));
+
 server.use("*", (req, res) => {
   res.status(404).json({ message: "Wrong direction" });
 });
@@ -47,11 +49,11 @@ io.on('connection', function (socket) {
                         db.Conversation.create({
                             convoID: data.sendFrom + data.sendTo,
                             userID: data.sendFrom
-                        }) 
+                        })
                         db.Conversation.create({
                             convoID: data.sendFrom + data.sendTo,
                             userID: data.sendTo
-                        }) 
+                        })
                     }
                     socket.join(convo.convoID);
                 })
