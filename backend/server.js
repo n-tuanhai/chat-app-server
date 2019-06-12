@@ -38,6 +38,7 @@ io.on('connection', function (socket) {
     console.log('Made socket connection', socket.id);
 
     socket.on('join-room', function (data) {
+        console.log('data when client join the room bitch: ', data)
         db.User.findOne({
             where: { 'id': data.sendFrom }
         }).then(user => {
@@ -63,17 +64,26 @@ io.on('connection', function (socket) {
 
 
     socket.on('chat', function (data) {
+        console.log('data when client send a message: ', data);
         db.User.findOne({
             where: { 'id': data.sendFrom }
         }).then(user => {
             if (user != null) {
-                const newMess = db.Message.build({
+                //const newMess = db.Message.build({
+                //    sendFrom: data.sendFrom,
+                //    sendTo: data.sendTo,
+                //    content: data.content,
+                //})
+                // send me an unique messageId here i think ?
+                const mess = {
                     sendFrom: data.sendFrom,
                     sendTo: data.sendTo,
                     content: data.content,
-                })
-                newMess.save();
-                socket.broadcast.to(data.convoID).emit('incoming-message', newMess.get({ plain: true }));
+                    createdAt: data.createdAt
+                }
+                //newMess.save();
+                //socket.broadcast.to(data.sendFrom).emit('incoming-message', newMess.get({ plain: true }));
+                socket.broadcast.to(data.convoID).emit('incoming-message', mess)
             }
         })
     })

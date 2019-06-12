@@ -5,6 +5,6 @@ const controller = require("./convController.js");
 
 const router = express.Router();
 
-router.get("/info", authMiddleware , controller.getInfo);
+router.post("/info", authMiddleware , controller.getInfo);
 
 module.exports = router;
